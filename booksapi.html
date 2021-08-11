@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>googleBooksAPI</title>
+
+</head>
+
+<body>
+  <button>start</button>
+
+  <h1>google books API</h1>
+  <button id="btn">データ取得</button>
+  <div id="output"></div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- axiosライブラリの読み込み -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <script>
+
+'use strict';
+{
+  const btn = document.querySelector('button');
+  const speech = new webkitSpeechRecognition();
+  speech.lang = 'ja-JP';
+  // speech.lang = 'en-US';
+  btn.addEventListener('click',() => {
+// console.log('llll');
+btn.sisabled = true;
+speech.start();
+  });
+
+  let myboice;
+  speech.onresult = (e) => {
+    // console.log(e);
+    speech.stop();
+    if (e.results[0].isFinal) {
+      console.log(e.results[0][0].transcript);
+      document.body.style.background = e.results[0][0].transcript;
+      myboice = String(e.results[0][0].transcript);
+    }
+  };
+
+  speech.onend = () => {
+    speech.start();
+  };
+
+  speech.onsoundstart = () => {
+    btn.textContent = 'qrocessing....'
+  };
+  speech.onsoundend = () => {
+    btn.textContent = 'waitiong...'
+  };
+
+    // リクエストを送るurlを準備
+    const url = 'https://www.googleapis.com/books/v1/volumes';
+
+    // ボタンクリック時にデータを取得しよう
+    $('#btn').on('click',() => {
+      axios.get(`https://www.googleapis.com/books/v1/volumes?q=intitle:${myboice}`)
+        // APIにリクエストを送るときはaxios.get()を使用 axios.get(url)
+        .then(function (response) {
+          // リクエスト成功時の処理(responseに結果が入っている)
+          const data = [];
+          console.log(response.data.items);
+            response.data.items.forEach(function (x) {
+              // data.push(`<a href="${x.volumeInfo.previewLink}" target=_blank <img src="${x.volumeInfo.imageLinks.thumbnail}"> <p>${x.volumeInfo.title}</p> </a>`);
+              data.push(`<a href="${x.volumeInfo.previewLink}" target="_blank"><img src="${x.volumeInfo.imageLinks.thumbnail}"></a>`);
+            });
+            $('#output').html(data);
+        }).catch(function (error) {
+          // リクエスト失敗時の処理(errorにエラー内容が入っている)
+          console.log(error);
+        }).finally(function () {
+          // 成功失敗に関わらず必ず実行
+          console.log('done!');
+        });
+    });
+  }
+
+  </script>
+</body>
+
+</html>
